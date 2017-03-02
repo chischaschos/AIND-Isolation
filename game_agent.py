@@ -7,6 +7,7 @@ You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
 import random
+import pdb
 
 
 class Timeout(Exception):
@@ -36,8 +37,9 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
+    # print("s: " + str(len(game.get_legal_moves())))
 
-    # TODO: finish this function!
+    # return len(game.get_legal_moves())
     raise NotImplementedError
 
 
@@ -172,7 +174,40 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        return 0.0, (1, 1)
+        legal_moves = game.get_legal_moves()
+
+        # If there are no more moves then we are done
+        if not legal_moves:
+            return game.utility(None), (-1, -1)
+
+        # depth decreases with every recursive call, a ply is a player turn for this game
+        # if we still have legal moves but we have reached the max depth then return the
+        # amount of legal_moves for the current_player and the location we are at
+
+        # score = len(legal_moves)
+        score = self.score(game, game.active_player)
+        print('d: ' + str(depth) + ', p: ' + str(game.active_player) + ", l: " + str(game.get_player_location(game.active_player)) + ", s: " + str(score) + ', m: '.join([' '.join(str(t)) for t in legal_moves]))
+        if depth == 0:
+            return score, game.get_player_location(game.active_player)
+
+        next_moves = []
+        for move in legal_moves:
+
+            # get a board copy, make a movement, expand tree
+            child_game = game.copy()
+            child_game.apply_move(move)
+
+            move_score, best_move = self.minimax(child_game, depth - 1, not maximizing_player)
+            next_moves.append((move_score, best_move))
+
+        branch_score = next_moves[0][0]
+        branch_move = next_moves[0][1]
+        for s, m in next_moves:
+            if (maximizing_player and s > branch_score) or (not maximizing_player and s < branch_score):
+                branch_score = s
+                branch_move = m
+
+        return branch_score, branch_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
