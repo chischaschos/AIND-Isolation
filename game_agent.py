@@ -180,6 +180,7 @@ class CustomPlayer:
 
         if depth == 0:
             if legal_moves:
+                # Return score from the stand point of player 1
                 return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
             else:
                 return game.utility(None), (-1, -1)
@@ -240,5 +241,5 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        return self.minimax(game, depth, maximizing_player)
+
