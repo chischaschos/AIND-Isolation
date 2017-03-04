@@ -7,6 +7,7 @@ interface, but cannot be automatically assessed for correctness.
 STUDENTS SHOULD NOT NEED TO MODIFY THIS CODE.  IT WOULD BE BEST TO TREAT THIS
 FILE AS A BLACK BOX FOR TESTING.
 """
+import pdb
 import random
 import unittest
 import timeit
@@ -357,7 +358,7 @@ class Project1Test(unittest.TestCase):
                        "next move. The move must be one of the legal moves " +
                        "on the current game board."))
 
-    # @timeout(5)
+    @timeout(5)
     # @unittest.skip("Skip minimax test.")  # Uncomment this line to skip test
     def test_minimax(self):
         """ Test CustomPlayer.minimax

@@ -8,6 +8,8 @@ relative strength using tournament.py and include the results in your report.
 """
 import random
 import pdb
+from collections import deque
+
 
 
 class Timeout(Exception):
@@ -39,8 +41,8 @@ def custom_score(game, player):
     """
     # print("s: " + str(len(game.get_legal_moves())))
 
-    # return len(game.get_legal_moves())
-    raise NotImplementedError
+    return len(game.get_legal_moves())
+    # raise NotImplementedError
 
 
 class CustomPlayer:
@@ -176,29 +178,17 @@ class CustomPlayer:
 
         legal_moves = game.get_legal_moves()
 
-        # If there are no more moves then we are done
-        if not legal_moves:
-            return game.utility(None), (-1, -1)
-
-        # depth decreases with every recursive call, a ply is a player turn for this game
-        # if we still have legal moves but we have reached the max depth then return the
-        # amount of legal_moves for the current_player and the location we are at
-
-        # score = len(legal_moves)
-        score = self.score(game, game.active_player)
-        print('d: ' + str(depth) + ', p: ' + str(game.active_player) + ", l: " + str(game.get_player_location(game.active_player)) + ", s: " + str(score) + ', m: '.join([' '.join(str(t)) for t in legal_moves]))
         if depth == 0:
-            return score, game.get_player_location(game.active_player)
+            if legal_moves:
+                return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
+            else:
+                return game.utility(None), (-1, -1)
 
         next_moves = []
         for move in legal_moves:
-
-            # get a board copy, make a movement, expand tree
-            child_game = game.copy()
-            child_game.apply_move(move)
-
-            move_score, best_move = self.minimax(child_game, depth - 1, not maximizing_player)
-            next_moves.append((move_score, best_move))
+            game_child = game.forecast_move(move)
+            score, _ = self.minimax(game_child, depth - 1, not maximizing_player)
+            next_moves.append((score, move))
 
         branch_score = next_moves[0][0]
         branch_move = next_moves[0][1]
