@@ -244,7 +244,6 @@ class CustomPlayer:
         if depth == 0:
             # Exit 2: Final depth, still move branches
             if legal_moves:
-                # Return score from the stand point of player 1
                 return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
 
             # Exit 3: Final depth, terminal node
@@ -259,19 +258,24 @@ class CustomPlayer:
             game_child = game.forecast_move(move)
             score, _ = self.alphabeta(game_child, depth - 1, next_alpha, next_beta, not maximizing_player)
 
-            if maximizing_player:
-                score = max(score, next_alpha)
-                next_move = (score, move)
-            else:
-                score = min(score, next_beta)
+            if next_move is None:
                 next_move = (score, move)
 
             if maximizing_player:
-                if score >= next_beta:
+                next_alpha = max(score, next_alpha)
+
+                if next_alpha != next_move[0]:
+                    next_move = (next_alpha, move)
+
+                if next_alpha >= next_beta:
                     return next_beta, move
-
             else:
-                if score <= next_alpha:
+                next_beta = min(score, next_beta)
+
+                if next_beta != next_move[0]:
+                    next_move = (next_beta, move)
+
+                if next_beta <= next_alpha:
                     return next_alpha, move
 
-        return next_move[0], next_move[1]
+        return next_move
