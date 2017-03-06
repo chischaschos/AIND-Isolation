@@ -238,8 +238,44 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
+
+        # Exit 1: No more time
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        return self.minimax(game, depth, maximizing_player)
+        legal_moves = game.get_legal_moves()
 
+        if depth == 0:
+            # Exit 2: Final depth, still move branches
+            if legal_moves:
+                # Return score from the stand point of player 1
+                return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
+
+            # Exit 3: Final depth, terminal node
+            else:
+                return game.utility(None), (-1, -1)
+
+        next_move = None
+        next_alpha = alpha
+        next_beta = beta
+
+        for move in legal_moves:
+            game_child = game.forecast_move(move)
+            score, _ = self.alphabeta(game_child, depth - 1, next_alpha, next_beta, not maximizing_player)
+
+            if maximizing_player:
+                score = max(score, next_alpha)
+                next_move = (score, move)
+            else:
+                score = min(score, next_beta)
+                next_move = (score, move)
+
+            if maximizing_player:
+                if score >= next_beta:
+                    return next_beta, move
+
+            else:
+                if score <= next_alpha:
+                    return next_alpha, move
+
+        return next_move[0], next_move[1]
