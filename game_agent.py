@@ -180,25 +180,21 @@ class CustomPlayer:
 
         if depth == 0:
             if legal_moves:
-                # Return score from the stand point of player 1
                 return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
             else:
                 return game.utility(None), (-1, -1)
 
-        next_moves = []
+        scores = []
+        moves = dict()
         for move in legal_moves:
             game_child = game.forecast_move(move)
             score, _ = self.minimax(game_child, depth - 1, not maximizing_player)
-            next_moves.append((score, move))
+            scores.append(score)
+            moves[score] = move
 
-        branch_score = next_moves[0][0]
-        branch_move = next_moves[0][1]
-        for s, m in next_moves:
-            if (maximizing_player and s > branch_score) or (not maximizing_player and s < branch_score):
-                branch_score = s
-                branch_move = m
-
-        return branch_score, branch_move
+        f = max if maximizing_player else min
+        minimax_value = f(scores)
+        return minimax_value, moves[minimax_value]
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
