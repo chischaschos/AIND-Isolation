@@ -184,11 +184,11 @@ class CustomPlayer:
 
         legal_moves = game.get_legal_moves()
 
+        if not legal_moves:
+            return game.utility(None), (-1, -1)
+
         if depth == 0:
-            if legal_moves:
-                return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
-            else:
-                return game.utility(None), (-1, -1)
+            return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
 
         scores = []
         moves = dict()
@@ -247,14 +247,11 @@ class CustomPlayer:
 
         legal_moves = game.get_legal_moves()
 
-        if depth == 0:
-            # Exit 2: Final depth, still move branches
-            if legal_moves:
-                return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
+        if not legal_moves:
+            return game.utility(None), (-1, -1)
 
-            # Exit 3: Final depth, terminal node
-            else:
-                return game.utility(None), (-1, -1)
+        if depth == 0:
+            return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
 
         next_move = None
         next_alpha = alpha
