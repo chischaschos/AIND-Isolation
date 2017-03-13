@@ -40,6 +40,17 @@ def toe_stepper(game, player):
 
     return score
 
+def greedy_toe_stepper(game, player):
+    legal_moves = game.get_legal_moves(player)
+    if not legal_moves:
+        return 0
+
+    score = max([toe_stepper(game.forecast_move(m), player) for m in legal_moves])
+    score += toe_stepper(game, player)
+
+    return score
+
+
 def number_of_moves(game, player):
     """
     Calculates a score based on the number of available moves for the current
@@ -70,5 +81,4 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # return number_of_moves(game, player)
-    return toe_stepper(game, player)
+    return greedy_toe_stepper(game, player)
