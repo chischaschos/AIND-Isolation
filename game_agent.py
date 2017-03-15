@@ -154,28 +154,48 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
+        nm = [(float("-inf"), (-1, -1))]
+
+        for move in game.get_legal_moves():
+            game_child = game.forecast_move(move)
+            nm.append((self.__min_value(game_child, depth - 1), move))
+
+        return max(nm)
+
+
+    def __min_value(self, game, depth):
+        if self.__cutoff_test(game, depth):
+            return self.score(game, game.__player_1__)
+
+        value = float("+inf")
+        for move in game.get_legal_moves():
+            game_child = game.forecast_move(move)
+            value = min(value, self.__max_value(game_child, depth - 1))
+
+        return value
+
+    def __max_value(self, game, depth):
+        if self.__cutoff_test(game, depth):
+            return self.score(game, game.__player_1__)
+
+        value = float("-inf")
+        for move in game.get_legal_moves():
+            game_child = game.forecast_move(move)
+            value = max(value, self.__min_value(game_child, depth - 1))
+
+        return value
+
+
+    def __cutoff_test(self, game, depth):
+        """
+        Assumming that get_legal_moves returns the available legal move for the current min or max player
+        """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        legal_moves = game.get_legal_moves()
+        return not game.get_legal_moves() or depth == 0
 
-        if not legal_moves:
-            return game.utility(game.__player_1__), (-1, -1)
 
-        if depth == 0:
-            return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
-
-        scores = []
-        moves = dict()
-        for move in legal_moves:
-            game_child = game.forecast_move(move)
-            score, _ = self.minimax(game_child, depth - 1, not maximizing_player)
-            scores.append(score)
-            moves[score] = move
-
-        f = max if maximizing_player else min
-        minimax_value = f(scores)
-        return minimax_value, moves[minimax_value]
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
@@ -222,11 +242,8 @@ class CustomPlayer:
 
         legal_moves = game.get_legal_moves()
 
-        # TODO: https://discussions.udacity.com/t/id-improved-losing-against-random/223652/2
-        # if maximimizing and no more movements you lose
-        # if minimazing and no more movements you win
         if not legal_moves:
-            return game.utility(game.__player_1__), (-1, -1)
+            return self.score(game, game.__player_1__), (-1, -1)
 
         if depth == 0:
             return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
