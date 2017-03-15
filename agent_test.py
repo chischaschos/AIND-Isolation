@@ -7,7 +7,6 @@ interface, but cannot be automatically assessed for correctness.
 STUDENTS SHOULD NOT NEED TO MODIFY THIS CODE.  IT WOULD BE BEST TO TREAT THIS
 FILE AS A BLACK BOX FOR TESTING.
 """
-import pdb
 import random
 import unittest
 import timeit
@@ -535,6 +534,7 @@ class Project1Test(unittest.TestCase):
 
             self.assertTrue(chosen_move in legal_moves, INVALID_MOVE.format(
                 legal_moves, chosen_move))
+
 
 if __name__ == '__main__':
     unittest.main()
