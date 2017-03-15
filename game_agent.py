@@ -160,7 +160,7 @@ class CustomPlayer:
         legal_moves = game.get_legal_moves()
 
         if not legal_moves:
-            return game.utility(None), (-1, -1)
+            return game.utility(game.__player_1__), (-1, -1)
 
         if depth == 0:
             return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
@@ -222,8 +222,11 @@ class CustomPlayer:
 
         legal_moves = game.get_legal_moves()
 
+        # TODO: https://discussions.udacity.com/t/id-improved-losing-against-random/223652/2
+        # if maximimizing and no more movements you lose
+        # if minimazing and no more movements you win
         if not legal_moves:
-            return game.utility(None), (-1, -1)
+            return game.utility(game.__player_1__), (-1, -1)
 
         if depth == 0:
             return self.score(game, game.__player_1__), game.get_player_location(game.active_player)

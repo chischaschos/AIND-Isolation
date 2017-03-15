@@ -3,6 +3,7 @@ This file contains all the scoring strategies
 """
 
 import pdb
+import sample_players
 
 def toe_stepper(game, player):
     """
@@ -81,4 +82,4 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    return greedy_toe_stepper(game, player)
+    return sample_players.improved_score(game, player)
