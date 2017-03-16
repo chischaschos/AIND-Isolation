@@ -113,6 +113,8 @@ class CustomPlayer:
                 # I may be wrong because the Timeout is raised when the timer
                 # is closed to expiring
                 while True:
+                    if self.time_left() < self.TIMER_THRESHOLD:
+                        return next_move
                     _, next_move = search_method(game, depth)
                     depth += 1
             else:
@@ -241,9 +243,8 @@ class CustomPlayer:
             game_child = game.forecast_move(move)
             value = self.__ab_min_value(game_child, depth - 1, alpha, beta)
 
-            if value > alpha:
-                alpha = value
-                best_move = move
+            if value >= alpha:
+                alpha, best_move = value, move
 
         return alpha, best_move
 
