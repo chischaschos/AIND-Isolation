@@ -158,30 +158,30 @@ class CustomPlayer:
 
         for move in game.get_legal_moves():
             game_child = game.forecast_move(move)
-            nm.append((self.__min_value(game_child, depth - 1), move))
+            nm.append((self.__mm_min_value(game_child, depth - 1), move))
 
         return max(nm)
 
 
-    def __min_value(self, game, depth):
+    def __mm_min_value(self, game, depth):
         if self.__cutoff_test(game, depth):
             return self.score(game, game.__player_1__)
 
         value = float("+inf")
         for move in game.get_legal_moves():
             game_child = game.forecast_move(move)
-            value = min(value, self.__max_value(game_child, depth - 1))
+            value = min(value, self.__mm_max_value(game_child, depth - 1))
 
         return value
 
-    def __max_value(self, game, depth):
+    def __mm_max_value(self, game, depth):
         if self.__cutoff_test(game, depth):
             return self.score(game, game.__player_1__)
 
         value = float("-inf")
         for move in game.get_legal_moves():
             game_child = game.forecast_move(move)
-            value = max(value, self.__min_value(game_child, depth - 1))
+            value = max(value, self.__mm_min_value(game_child, depth - 1))
 
         return value
 
@@ -235,45 +235,41 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
+        best_move = (-1, -1)
 
-        # Exit 1: No more time
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise Timeout()
-
-        legal_moves = game.get_legal_moves()
-
-        if not legal_moves:
-            return self.score(game, game.__player_1__), (-1, -1)
-
-        if depth == 0:
-            return self.score(game, game.__player_1__), game.get_player_location(game.active_player)
-
-        next_move = None
-        next_alpha = alpha
-        next_beta = beta
-
-        for move in legal_moves:
+        for move in game.get_legal_moves():
             game_child = game.forecast_move(move)
-            score, _ = self.alphabeta(game_child, depth - 1, next_alpha, next_beta, not maximizing_player)
+            value = self.__ab_min_value(game_child, depth - 1, alpha, beta)
 
-            if next_move is None:
-                next_move = (score, move)
+            if value > alpha:
+                alpha = value
+                best_move = move
 
-            if maximizing_player:
-                next_alpha = max(score, next_alpha)
+        return alpha, best_move
 
-                if next_alpha != next_move[0]:
-                    next_move = (next_alpha, move)
 
-                if next_alpha >= next_beta:
-                    return next_beta, move
-            else:
-                next_beta = min(score, next_beta)
+    def __ab_min_value(self, game, depth, alpha, beta):
+        if self.__cutoff_test(game, depth):
+            return self.score(game, game.__player_1__)
 
-                if next_beta != next_move[0]:
-                    next_move = (next_beta, move)
+        value = float("+inf")
+        for move in game.get_legal_moves():
+            value = min(value, self.__ab_max_value(game.forecast_move(move), depth - 1, alpha, beta))
+            if value <= alpha:
+                return value
+            beta = min(beta, value)
 
-                if next_beta <= next_alpha:
-                    return next_alpha, move
+        return value
 
-        return next_move
+    def __ab_max_value(self, game, depth, alpha, beta):
+        if self.__cutoff_test(game, depth):
+            return self.score(game, game.__player_1__)
+
+        value = float("-inf")
+        for move in game.get_legal_moves():
+            value = max(value, self.__ab_min_value(game.forecast_move(move), depth - 1, alpha, beta))
+            if value >= beta:
+                return value
+            alpha = max(alpha, value)
+
+        return value
