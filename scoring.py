@@ -82,4 +82,4 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    return sample_players.improved_score(game, player)
+    return sample_players.open_move_score(game, player)

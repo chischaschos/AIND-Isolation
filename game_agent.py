@@ -118,7 +118,7 @@ class CustomPlayer:
                     _, next_move = search_method(game, depth)
                     depth += 1
             else:
-                _, next_move = search_method(game, depth)
+                _, next_move = search_method(game, self.search_depth)
                 return next_move
 
         except Timeout:
@@ -167,7 +167,7 @@ class CustomPlayer:
 
     def __mm_min_value(self, game, depth):
         if self.__cutoff_test(game, depth):
-            return self.score(game, game.__player_1__)
+            return self.score(game, self)
 
         value = float("+inf")
         for move in game.get_legal_moves():
@@ -178,7 +178,7 @@ class CustomPlayer:
 
     def __mm_max_value(self, game, depth):
         if self.__cutoff_test(game, depth):
-            return self.score(game, game.__player_1__)
+            return self.score(game, self)
 
         value = float("-inf")
         for move in game.get_legal_moves():
@@ -186,18 +186,6 @@ class CustomPlayer:
             value = max(value, self.__mm_min_value(game_child, depth - 1))
 
         return value
-
-
-    def __cutoff_test(self, game, depth):
-        """
-        Assumming that get_legal_moves returns the available legal move for the current min or max player
-        """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise Timeout()
-
-        return not game.get_legal_moves() or depth == 0
-
-
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
@@ -248,10 +236,9 @@ class CustomPlayer:
 
         return alpha, best_move
 
-
     def __ab_min_value(self, game, depth, alpha, beta):
         if self.__cutoff_test(game, depth):
-            return self.score(game, game.__player_1__)
+            return self.score(game, self)
 
         value = float("+inf")
         for move in game.get_legal_moves():
@@ -264,7 +251,7 @@ class CustomPlayer:
 
     def __ab_max_value(self, game, depth, alpha, beta):
         if self.__cutoff_test(game, depth):
-            return self.score(game, game.__player_1__)
+            return self.score(game, self)
 
         value = float("-inf")
         for move in game.get_legal_moves():
@@ -274,3 +261,14 @@ class CustomPlayer:
             alpha = max(alpha, value)
 
         return value
+
+    def __cutoff_test(self, game, depth):
+        """
+        Assumming that get_legal_moves returns the available legal move for the current min or max player
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise Timeout()
+
+        return not game.get_legal_moves() or depth == 0
+
+
