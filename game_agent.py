@@ -92,11 +92,12 @@ class CustomPlayer:
             (-1, -1) if there are no available legal moves.
         """
 
+        if len(legal_moves) == 0:
+            return (-1, -1)
+
         self.time_left = time_left
 
-        # TODO: create opening book based on the legal_moves param?
-        # TODO: return immediately if there are no legal moves?
-        next_move = None
+        next_move = random.choice(legal_moves)
         depth = 1
         search_method = self.minimax if self.method is 'minimax' else self.alphabeta
 

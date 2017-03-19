@@ -15,33 +15,6 @@ class ScoringTest(unittest.TestCase):
     Simple tests for scoring functions
     """
 
-    def test_number_of_moves(self):
-        """
-        Test that player 1 has 8 available moves from a position with this
-        characteristics:
-          - Far from a wall
-          - Not colliding with a player or used space
-        | 2 |   |   |   | x |   |   |
-        |   |   | 1 |   |   |   |   |
-        | x |   |   |   | x |   |   |
-        |   | x |   | x |   |   |   |
-        |   |   |   |   |   |   |   |
-        |   |   |   |   |   |   |   |
-        |   |   |   |   |   |   |   |
-        """
-        agent_ut = game_agent.CustomPlayer()
-        board = isolation.Board(agent_ut, 'null_agent')
-
-        starting_location = (1, 2)
-        adversary_location = (0, 0)
-        board.apply_move(starting_location)
-        board.apply_move(adversary_location)
-        print(board.to_string())
-
-        score = scoring.number_of_moves(board, board.active_player)
-
-        self.assertEqual(score, 5)
-
     def test_toe_stepper(self):
         """
         | 2 |   |   |   | x |   |   |
@@ -61,6 +34,34 @@ class ScoringTest(unittest.TestCase):
 
         score = scoring.toe_stepper(board, board.active_player)
 
-        self.assertEqual(score, 5 + 2)
+        self.assertEqual(score, 74)
+
+    def test_common_sense_1(self):
+        """
+        - Player 1 has 5 movements,  Player 2 has 1 movement:
+          - 5 - 1 = 4 * maximizer = 40
+        - Player 1's movement stepped on an Player 2's move:
+          - score += 1 * mov_value * maximizer ~ 24
+
+        | 2 |   |   |   | x |   |   |
+        |   |   | 1 |   |   |   |   |
+        | x |   |   |   | x |   |   |
+        |   | x |   | x |   |   |   |
+        |   |   |   |   |   |   |   |
+        |   |   |   |   |   |   |   |
+        """
+        agent_ut = game_agent.CustomPlayer()
+        board = isolation.Board(agent_ut, 'null_agent')
+
+        starting_location = (1, 2)
+        adversary_location = (0, 0)
+        board.apply_move(starting_location)
+        board.apply_move(adversary_location)
+
+        score = scoring.common_sense(board, board.active_player)
+
+        self.assertEqual(score, 64)
+
+
 if __name__ == '__main__':
     unittest.main()

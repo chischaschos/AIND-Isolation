@@ -60,8 +60,7 @@ def toe_stepper_score(game, player):
                     player_location[1] + direction[1])
 
         if position == opponent_location:
-            # We stepped on an opponents position
-            score += 2
+            score += __move_value() * 2
             break
 
     return score
@@ -88,7 +87,7 @@ def toe_stepper(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    open_move_score = float(len(game.get_legal_moves(player)))
+    open_move_score = float(len(game.get_legal_moves(player))) * 10
 
     return open_move_score + toe_stepper_score(game, player)
 
@@ -96,8 +95,9 @@ def toe_stepper(game, player):
 def improved_toe_stepper(game, player):
     """
     improved_score + toe_stepper idea
-    """
 
+    The idea is that games where the player has more movements are better.
+    """
     if game.is_loser(player):
         return float("-inf")
 
@@ -113,14 +113,48 @@ def improved_toe_stepper(game, player):
 
 def common_sense(game, player):
     """
-    Based on the structure of the game.
-
     The idea is:
-    - Keep yourself away from walls, walls decrease number of movements.
-    - Lower score for games that have the player close to a wall.
-    - Higher score for games that take the player away from wall.
-    - Anyways prefer games that increase mobility.
+    - Give weights to different  factors of the game
+    - Builds on toe_stepper and improved_score plus
+    - There are movements that can block an opponent's next move such as:
+      |   |   |   |   |   |   |   |
+      |   |   |   |   | o |   |   |
+      |   |   | O |   |   |   |   |
+      |   |   |   | P |   |   |   |
+      |   | o |   |   |   |   |   |
+      |   |   |   |   |   |   |   |
     """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    improved_score = float(own_moves - opp_moves) * 10
+
+    opponent = game.get_opponent(player)
+    opponent_location = game.get_player_location(opponent)
+    player_location = game.get_player_location(player)
+
+    diagonal_directions = [(-1, -1), (1, -1), (1, -1), (1, 1)]
+
+    diagonal_score = 0
+
+    for d_direction in diagonal_directions:
+        position = (player_location[0] + d_direction[0],
+                    player_location[1] + d_direction[1])
+
+        if position == opponent_location:
+            diagonal_score += __move_value() * 2
+
+    return improved_score + diagonal_score + toe_stepper_score(game, player)
+
+
+def __move_value():
+    return round(1 / 8 * 100)
+
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -144,4 +178,4 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    return improved_toe_stepper(game, player)
+    return common_sense(game, player)
