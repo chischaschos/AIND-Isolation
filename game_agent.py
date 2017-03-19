@@ -164,7 +164,6 @@ class CustomPlayer:
 
         return max(nm)
 
-
     def __mm_min_value(self, game, depth):
         if self.__cutoff_test(game, depth):
             return self.score(game, self)
@@ -234,6 +233,12 @@ class CustomPlayer:
             if value >= alpha:
                 alpha, best_move = value, move
 
+            # I was missing this, as soon as I added it successes increases by 20%
+            # TODO: Understand how is that an beta and alpha become infinites so
+            # that this would DEEP PRUNE
+            if beta <= alpha:
+                break
+
         return alpha, best_move
 
     def __ab_min_value(self, game, depth, alpha, beta):
@@ -243,9 +248,9 @@ class CustomPlayer:
         value = float("+inf")
         for move in game.get_legal_moves():
             value = min(value, self.__ab_max_value(game.forecast_move(move), depth - 1, alpha, beta))
-            if value <= alpha:
-                return value
             beta = min(beta, value)
+            if beta <= alpha:
+                break
 
         return value
 
@@ -256,9 +261,9 @@ class CustomPlayer:
         value = float("-inf")
         for move in game.get_legal_moves():
             value = max(value, self.__ab_min_value(game.forecast_move(move), depth - 1, alpha, beta))
-            if value >= beta:
-                return value
             alpha = max(alpha, value)
+            if beta <= alpha:
+                break
 
         return value
 
