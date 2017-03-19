@@ -46,26 +46,6 @@ This file contains all the scoring strategies.
 import pdb
 # import sample_players
 
-def toe_stepper_score(game, player):
-    opponent = game.get_opponent(player)
-    opponent_location = game.get_player_location(opponent)
-    player_location = game.get_player_location(player)
-
-    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2),
-                  (1, -2), (1, 2), (2, -1), (2, 1)]
-
-    score = 0
-    for direction in directions:
-        position = (player_location[0] + direction[0],
-                    player_location[1] + direction[1])
-
-        if position == opponent_location:
-            score += __move_value() * 2
-            break
-
-    return score
-
-
 def toe_stepper(game, player):
     """
     open_move_score plus:
@@ -89,7 +69,7 @@ def toe_stepper(game, player):
 
     open_move_score = float(len(game.get_legal_moves(player))) * 10
 
-    return open_move_score + toe_stepper_score(game, player)
+    return open_move_score + __toe_stepper_score(game, player)
 
 
 def improved_toe_stepper(game, player):
@@ -104,11 +84,7 @@ def improved_toe_stepper(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    improved_score = float(own_moves - opp_moves)
-
-    return improved_score + toe_stepper_score(game, player)
+    return __improved_score(game, player) + __toe_stepper_score(game, player)
 
 
 def common_sense(game, player):
@@ -130,31 +106,68 @@ def common_sense(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    improved_score = float(own_moves - opp_moves) * 10
+    cummulative_scores = __improved_score(game, player) + __toe_stepper_score(game, player)
 
     opponent = game.get_opponent(player)
     opponent_location = game.get_player_location(opponent)
     player_location = game.get_player_location(player)
 
-    diagonal_directions = [(-1, -1), (1, -1), (1, -1), (1, 1)]
+    # keys are the places where the opponent may be
+    # values are the places where the opponent may move (to-move)
+    # we want those pairs where the opponent may be with valid
+    # to-move locations
+    directions = {
+            (-1, -1): [(-1, 2), (2, -1)], # top left
+            (1, -1): [(1, 2), (-2, 1)],  # top right
+            (-1, 1): [(-1, -2), (1, 2)],  # bottom left
+            (1, 1): [(-1, 2), (1, -2)]     # bottom right
+            }
 
-    diagonal_score = 0
+    for direction, opponent_locations in directions.items():
+        # the current opponent move
+        position = (player_location[0] + direction[0],
+                    player_location[1] + direction[1])
 
-    for d_direction in diagonal_directions:
-        position = (player_location[0] + d_direction[0],
-                    player_location[1] + d_direction[1])
+        for move in opponent_locations:
+            # possible opponent movement
+            next_position = (opponent_location[0] + move[0],
+                             opponent_location[1] + move[1])
 
-        if position == opponent_location:
-            diagonal_score += __move_value() * 2
+            if game.move_is_legal(next_position) and position == opponent_location:
+                diagonal_score = __move_value() * 2
+                return cummulative_scores + diagonal_score
 
-    return improved_score + diagonal_score + toe_stepper_score(game, player)
+    return cummulative_scores
 
 
 def __move_value():
     return round(1 / 8 * 100)
 
+
+def __improved_score(game, player):
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves) * 20
+
+
+def __toe_stepper_score(game, player):
+    opponent = game.get_opponent(player)
+    opponent_location = game.get_player_location(opponent)
+    player_location = game.get_player_location(player)
+
+    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2),
+                  (1, -2), (1, 2), (2, -1), (2, 1)]
+
+    score = 0
+    for direction in directions:
+        position = (player_location[0] + direction[0],
+                    player_location[1] + direction[1])
+
+        if position == opponent_location:
+            score += __move_value() * 2
+            break
+
+    return score
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
