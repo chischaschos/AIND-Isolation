@@ -107,11 +107,6 @@ class CustomPlayer:
             # when the timer gets close to expiring
             if self.iterative:
 
-                # TODO: I suppose that at some point I need to make sure that
-                # given X remaining time I can estimate that the next loop
-                # iteration will end.
-                # I may be wrong because the Timeout is raised when the timer
-                # is closed to expiring
                 while True:
                     if self.time_left() < self.TIMER_THRESHOLD:
                         return next_move
